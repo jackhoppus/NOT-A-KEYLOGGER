@@ -1,0 +1,23 @@
+	.equ status, $000
+	.equ data, $001
+string:	.char 'get pwned', charlen
+	.equ dump, $D00
+
+	.equ@, $f00
+
+	ldx# 0
+	lda# 0
+pollkb:	inb status
+	nop
+	jge pollkb
+writing:	inb data
+	lda+ $D00
+	adx# 1
+	cma# 'd'
+	jeq checkrest
+	jmp writing
+
+checkrest: 	txa
+	cma charlen
+	jlt writing
+	sba
