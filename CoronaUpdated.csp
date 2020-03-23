@@ -1,0 +1,54 @@
+	.equ@, $000
+	.equ status, $000
+	.equ data, $001
+	.equ@, $B00
+string:	.char 'get pwned', charlen
+	.equ dump, $D00
+	.equ comparingspot, $E00
+
+	.equ@, $000
+	ldx# 0
+	lda# 0
+	lds# $FFF
+pollkb:	inb status
+	nop
+	jge pollkb
+writing:	inb data
+	sta+ dump
+	adx# 1
+	cma# 'd'
+	jeq checkrest
+	jmp pollkb
+
+checkrest: 	txa
+	cma# charlen
+	jlt pollkb
+	sba# charlen	;subtracting index reg from d to g, by charlen
+	tax
+	pshx		;sp ! 1 has our get pwned?? starting index
+	psh# 0	;our other loop for the password starts @ 0
+loop:	tsf
+	popx
+	cmx# charlen
+	jgt erasing
+	ldc string
+	sta comparingspot
+	adx# 1
+	txa
+	psha		;sp ! 0 has password index
+	pop ! 1
+	lda+ dump
+	cma comparingspot
+	jne pollkb
+	adx# 1
+	pshx
+	jmp loop
+	
+	
+
+erasing:	ldx# 0
+	lda# 0
+	sta+ $000
+	aoc# 50
+	jlt erasing
+	hlt
